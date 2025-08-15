@@ -1,0 +1,1 @@
+{"version":2,"defects":[],"times":{"Tests\\Unit\\Services\\RestCountriesServiceTest::test_it_fetches_countries_successfully":0.02,"Tests\\Unit\\Services\\RestCountriesServiceTest::test_it_throws_exception_on_api_failure":0.001}}
