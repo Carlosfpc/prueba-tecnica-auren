@@ -24,31 +24,67 @@ class CountryResource extends Resource
     public static function form(Form $form): Form
     {
         return $form
-            ->schema([
-                Forms\Components\TextInput::make('name_common')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('name_official')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('region')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('subregion')
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('capital')
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('population')
-                    ->required()
-                    ->numeric(),
-                Forms\Components\TextInput::make('area')
-                    ->required()
-                    ->numeric(),
-                Forms\Components\TextInput::make('flag_emoji')
-                    ->maxLength(16),
-                Forms\Components\TextInput::make('flag_png')
-                    ->maxLength(255),
-            ]);
+        ->schema([
+            Forms\Components\Section::make('Identity & Location')
+                ->description('Basic identification and geographical information.')
+                ->schema([
+                    Forms\Components\TextInput::make('cca3')
+                        ->label('Country Code (CCA3)')
+                        ->required()
+                        ->length(3)
+                        ->unique(ignoreRecord: true),
+
+                    Forms\Components\Grid::make(2)
+                        ->schema([
+                            Forms\Components\TextInput::make('name_common')
+                                ->label('Common Name')
+                                ->required()
+                                ->maxLength(255),
+
+                            Forms\Components\TextInput::make('name_official')
+                                ->label('Official Name')
+                                ->required()
+                                ->maxLength(255),
+                        ]),
+
+
+                    Forms\Components\Grid::make(2)
+                        ->schema([
+                            Forms\Components\TextInput::make('region')
+                                ->required()
+                                ->maxLength(255),
+                            Forms\Components\TextInput::make('subregion')
+                                ->maxLength(255),
+                        ]),
+
+                    Forms\Components\TextInput::make('capital')
+                        ->maxLength(255),
+                ])->columns(2),
+
+            Forms\Components\Section::make('Demographics & Flags')
+                ->schema([
+                    Forms\Components\TextInput::make('population')
+                        ->required()
+                        ->numeric()
+                        ->integer(),
+
+                    Forms\Components\TextInput::make('area')
+                        ->required()
+                        ->numeric()
+                        ->suffix(' km²'),
+
+                    Forms\Components\Grid::make(2)
+                        ->schema([
+                            Forms\Components\TextInput::make('flag_emoji')
+                                ->label('Flag (Emoji)')
+                                ->maxLength(16),
+                            Forms\Components\TextInput::make('flag_png')
+                                ->label('Flag (PNG URL)')
+                                ->maxLength(255)
+                                ->url(),
+                        ]),
+                ])->columns(2),
+        ]);
     }
 
     public static function table(Table $table): Table
