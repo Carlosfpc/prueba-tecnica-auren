@@ -12,6 +12,8 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
 
 class CountryResource extends Resource
 {
@@ -52,49 +54,66 @@ class CountryResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->columns([
-                Tables\Columns\TextColumn::make('cca3')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('name_common')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('name_official')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('region')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('subregion')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('capital')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('population')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('area')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('flag_emoji')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('flag_png')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-            ])
-            ->filters([
-                //
-            ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
-            ]);
+        ->columns([
+            Tables\Columns\TextColumn::make('flag_emoji')
+                ->label('Flag'),
+            Tables\Columns\TextColumn::make('cca3')
+                ->label('Code')
+                ->searchable()
+                ->sortable(),
+            Tables\Columns\TextColumn::make('name_common')
+                ->label('Common Name')
+                ->searchable()
+                ->sortable(),
+            Tables\Columns\TextColumn::make('region')
+                ->searchable()
+                ->sortable(),
+            Tables\Columns\TextColumn::make('population')
+                ->numeric()
+                ->sortable(),
+            Tables\Columns\TextColumn::make('name_official')
+                ->label('Official Name')
+                ->searchable()
+                ->toggleable(isToggledHiddenByDefault: true),
+            Tables\Columns\TextColumn::make('area')
+                ->numeric()
+                ->sortable()
+                ->toggleable(isToggledHiddenByDefault: true),
+        ])
+        ->filters([
+            SelectFilter::make('region')
+                ->options(
+                    fn () => Country::query()->distinct()->pluck('region', 'region')->all()
+                ),
+            Filter::make('population')
+                ->form([
+                    Forms\Components\TextInput::make('population_from')
+                        ->label('Population from')
+                        ->numeric(),
+                    Forms\Components\TextInput::make('population_to')
+                        ->label('Population to')
+                        ->numeric(),
+                ])
+                ->query(function (Builder $query, array $data): Builder {
+                    return $query
+                        ->when(
+                            $data['population_from'],
+                            fn (Builder $query, $value): Builder => $query->where('population', '>=', $value)
+                        )
+                        ->when(
+                            $data['population_to'],
+                            fn (Builder $query, $value): Builder => $query->where('population', '<=', $value)
+                        );
+                })
+        ])
+        ->actions([
+            Tables\Actions\EditAction::make(),
+        ])
+        ->bulkActions([
+            Tables\Actions\BulkActionGroup::make([
+                Tables\Actions\DeleteBulkAction::make(),
+            ]),
+        ]);
     }
 
     public static function getRelations(): array
