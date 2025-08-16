@@ -3,26 +3,35 @@
 namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\JsonResponse;
-use App\Models\Country;
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+
+// Controllers
+use App\Http\Controllers\Controller;
+
+// Models
+use App\Models\Country;
+
+// Validations
+use App\Http\Requests\Api\GetCountriesRequest;
+use App\Http\Requests\Api\ShowCountryRequest;
 
 class CountryController extends Controller
 {
     /**
      * Display a paginated list of countries with optional filters and sorting.
      */
-    public function index(Request $request): JsonResponse
+    public function index(GetCountriesRequest $request): JsonResponse
     {
+        // Retrieve the validated and sanitized parameters.
+        $validatedData = $request->validated();
+        $searchTerm = $validatedData['q'] ?? null;
+        $regionFilter = $validatedData['region'] ?? null;
+        $sortByPopulation = isset($validatedData['population_sort']);
+        $sortDirection = $validatedData['sort_order'] ?? 'desc';
+        $perPage = $validatedData['per_page'] ?? 15;
+
         // Start a base query.
         $query = Country::query();
-
-        // Retrieve validated parameters from the request.
-        $searchTerm = $request->input('q', null);
-        $regionFilter = $request->input('region', null);
-        $sortByPopulation = $request->has('population_sort');
-        $sortDirection = $request->input('sort_order', 'desc');
-        $perPage = $request->input('per_page', 15);
 
         // Apply filters via model scopes.
         $query->filterByName($searchTerm);
@@ -50,11 +59,15 @@ class CountryController extends Controller
     /**
      * Display a single country by its CCA3 code.
      */
-    public function show(string $cca3): JsonResponse
+    public function show(ShowCountryRequest $request, string $cca3): JsonResponse
     {
-        // Find the country by its primary key (cca3).
-        // findOrFail will automatically throw a 404 Not Found exception if not found.
-        $country = Country::findOrFail($cca3);
+        $country = Country::find($cca3);
+
+        if (!$country) {
+            return response()->json([
+                'message' => 'Country not found.'
+            ], 404);
+        }
 
         return response()->json($country);
     }
