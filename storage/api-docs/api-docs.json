@@ -1,0 +1,147 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Auren Countries API Documentation",
+        "description": "API documentation for the technical test.",
+        "contact": {
+            "email": "carlosfranciscopc@gmail.com"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8000",
+            "description": "Local Development Server"
+        }
+    ],
+    "paths": {
+        "/api/countries": {
+            "get": {
+                "tags": [
+                    "Countries"
+                ],
+                "summary": "Get a paginated list of countries",
+                "description": "Returns a list of countries, supporting filtering, sorting, and pagination.",
+                "operationId": "getCountriesList",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "description": "Search term to filter by common or official name.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "region",
+                        "in": "query",
+                        "description": "Filter results by a specific region (e.g., 'Europe', 'Americas').",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "population_sort",
+                        "in": "query",
+                        "description": "Flag to activate sorting by population. The value does not matter.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "sort_order",
+                        "in": "query",
+                        "description": "Direction for population sort. Allowed values: 'asc', 'desc'.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "desc",
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Number of results to return per page.",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 15
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "The page number to retrieve.",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation. Returns a paginated list of countries.",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error if parameters are invalid."
+                    }
+                }
+            }
+        },
+        "/api/countries/{cca3}": {
+            "get": {
+                "tags": [
+                    "Countries"
+                ],
+                "summary": "Get a single country by its CCA3 code",
+                "operationId": "eda479b05a814db422f32975c8b81ff6",
+                "parameters": [
+                    {
+                        "name": "cca3",
+                        "in": "path",
+                        "description": "The 3-letter country code (e.g., ESP)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "cca3"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Country not found"
+                    }
+                }
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Countries",
+            "description": "Countries"
+        }
+    ]
+}
