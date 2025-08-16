@@ -26,4 +26,52 @@ class Country extends Model
         'flag_png',
     ];
 
+    /**
+     * Scope a query to filter by name.
+     * Allows searching in common and official names.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  string|null  $search
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeFilterByName($query, $search)
+    {
+        if (!$search) {
+            return $query;
+        }
+
+        return $query->where([
+            ['name_common', 'like', "%{$search}%"],
+            ['name_official', 'like', "%{$search}%", 'or'],
+        ]);
+    }
+
+    /**
+     * Scope a query to filter by region.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  string|null  $region
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeFilterByRegion($query, $region)
+    {
+        if (!$region) {
+            return $query;
+        }
+
+        return $query->where('region', $region);
+    }
+
+    /**
+     * Scope a query to sort by population.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  string  $direction
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeSortByPopulation($query, $direction = 'desc')
+    {
+        return $query->orderBy('population', $direction);
+    }
+
 }
