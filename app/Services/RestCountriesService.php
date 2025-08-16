@@ -10,7 +10,7 @@ use Illuminate\Support\Collection;
  */
 class RestCountriesService
 {
-    private const API_BASE_URL = 'https://restcountries.com/v1';
+    private const API_BASE_URL = 'https://restcountries.com/v3.1';
 
     private array $apiFields = [
         'cca3',
@@ -20,6 +20,7 @@ class RestCountriesService
         'capital',
         'population',
         'area',
+        'flag',
         'flags',
     ];
 

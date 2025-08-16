@@ -44,7 +44,7 @@ class SyncCountriesAction
                     'capital' => $country['capital'][0] ?? null,
                     'population' => $country['population'],
                     'area' => $country['area'],
-                    'flag_emoji' => $country['flags']['emoji'] ?? null,
+                    'flag_emoji' => $country['flag'] ?? null,
                     'flag_png' => $country['flags']['png'] ?? null,
                 ];
             })->toArray();
@@ -57,8 +57,15 @@ class SyncCountriesAction
                 $formattedCountries,
                 ['cca3'],
                 [
-                    'name_common', 'name_official', 'region', 'subregion', 'capital',
-                    'population', 'area', 'flag_emoji', 'flag_png'
+                    'name_common',
+                    'name_official',
+                    'region',
+                    'subregion',
+                    'capital',
+                    'population',
+                    'area',
+                    'flag_emoji',
+                    'flag_png'
                 ]
             );
 
