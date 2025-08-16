@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Actions\SyncCountriesAction;
+use App\Jobs\SyncCountriesJob;
 use Illuminate\Console\Command;
 
 class SyncCountriesCommand extends Command
@@ -24,21 +24,14 @@ class SyncCountriesCommand extends Command
     /**
      * Execute the console command.
      */
-    public function handle(SyncCountriesAction $syncAction): int // <-- 4. Inject the Action here.
+    public function handle(): int
     {
-        $this->info('Starting country synchronization...');
+        $this->info('Dispatching country synchronization job to the queue...');
 
-        $summary = $syncAction->execute();
+        SyncCountriesJob::dispatch();
 
-        $this->info('Synchronization Complete!');
-        $this->table(
-            ['Metric', 'Value'],
-            [
-                ['Total Fetched', $summary['total_fetched']],
-                ['Upserted Records', $summary['upserted']],
-                ['Status', $summary['status']],
-            ]
-        );
+        $this->info('Job dispatched successfully! The synchronization will run in the background.');
+        $this->comment('Run "php artisan queue:work" to process the queue.');
 
         return Command::SUCCESS;
     }

@@ -7,6 +7,7 @@ use App\Filament\Resources\CountryResource;
 use Filament\Actions;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
+use App\Jobs\SyncCountriesJob;
 
 class ListCountries extends ListRecords
 {
@@ -15,27 +16,25 @@ class ListCountries extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            // New Country button.
             Actions\CreateAction::make(),
 
-            // Custom "Sync from API" action.
             Actions\Action::make('sync')
                 ->label('Sync from API')
                 ->icon('heroicon-o-arrow-path')
+                ->requiresConfirmation()
                 ->action(function () {
-                    $summary = app(SyncCountriesAction::class)->execute();
-
+                    SyncCountriesJob::dispatch();
                     Notification::make()
-                        ->title('Synchronization Complete')
-                        ->body(sprintf(
-                            'Fetched: %d countries. Upserted: %d records. Status: %s',
-                            $summary['total_fetched'],
-                            $summary['upserted'],
-                            $summary['status']
-                        ))
+                        ->title('Synchronization Started')
+                        ->body('The country data is being synchronized in the background. The table will update automatically upon completion.')
                         ->success()
                         ->send();
                 }),
         ];
+    }
+
+    protected function getTablePollingInterval(): ?string
+    {
+        return '5s';
     }
 }
