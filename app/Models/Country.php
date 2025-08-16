@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -34,16 +35,14 @@ class Country extends Model
      * @param  string|null  $search
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeFilterByName($query, $search)
+    public function scopeFilterByName(Builder $query, ?string $search): Builder
     {
-        if (!$search) {
-            return $query;
-        }
-
-        return $query->where([
-            ['name_common', 'like', "%{$search}%"],
-            ['name_official', 'like', "%{$search}%", 'or'],
-        ]);
+        return $query->when($search, function (Builder $q, string $searchTerm) {
+            $q->where(function (Builder $subQuery) use ($searchTerm) {
+                $subQuery->where('name_common', 'like', "%{$searchTerm}%")
+                    ->orWhere('name_official', 'like', "%{$searchTerm}%");
+            });
+        });
     }
 
     /**
@@ -53,13 +52,11 @@ class Country extends Model
      * @param  string|null  $region
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeFilterByRegion($query, $region)
+    public function scopeFilterByRegion(Builder $query, ?string $region): Builder
     {
-        if (!$region) {
-            return $query;
-        }
-
-        return $query->where('region', $region);
+        return $query->when($region, function (Builder $q, string $regionName) {
+            $q->where('region', $regionName);
+        });
     }
 
     /**
@@ -69,7 +66,7 @@ class Country extends Model
      * @param  string  $direction
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeSortByPopulation($query, $direction = 'desc')
+    public function scopeSortByPopulation(Builder $query, string $direction = 'desc'): Builder
     {
         return $query->orderBy('population', $direction);
     }
