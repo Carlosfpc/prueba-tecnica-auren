@@ -100,3 +100,52 @@ Para procesar futuras sincronizaciones (ejecutadas desde Filament o el comando `
   Abre una **nueva terminal** y déjala corriendo con el siguiente comando:
   ```bash
   docker compose exec app php artisan queue:work
+
+
+
+
+---
+
+## 🏛️ Decisiones Técnicas y Limitaciones
+
+Esta sección documenta las decisiones de diseño clave y las posibles futuras mejoras del proyecto.
+
+### Decisiones Técnicas Clave
+
+Para construir esta aplicación, se han tomado las siguientes decisiones para asegurar un código organizado, eficiente y fácil de mantener:
+
+*   **1. Lógica Organizada:**
+    > En lugar de dispersar la lógica de sincronización, se ha centralizado en una única "Acción" inteligente (`SyncCountriesAction`). De esta forma, si la sincronización necesita cambiar, solo se modifica un archivo. Tanto el botón de la web como el comando de la terminal usan esta misma acción, evitando la duplicación de código.
+
+*   **2. Tareas en Segundo Plano (El "No hacer esperar al usuario"):**
+    > La sincronización de datos, que puede ser una tarea larga, se envía a una "cola de trabajos". Así, cuando el usuario pulsa "Sincronizar", la página responde al instante mientras el trabajo se procesa, mejorando la experiencia de usuario y la fiabilidad del proceso.
+
+*   **3. Búsquedas Inteligentes (Consultas legibles):**
+    > La lógica para filtrar y ordenar en la API se ha guardado como `Scopes` en el modelo `Country`. Esto hace que el código del controlador sea muy simple y se lea de forma casi natural, facilitando su comprensión.
+
+*   **4. Reglas de Seguridad para la API (Validación):**
+    > Se han creado validaciones (`Form Requests`) que comprueban todos los datos que llegan a la API antes de ser procesados. Esto asegura que la API sea robusta y esté protegida contra datos incorrectos o maliciosos.
+
+*   **5. Permisos de Usuario Claros (Políticas de Acceso):**
+    > Se ha implementado un conjunto de reglas (`Policy`) que define quién puede ver y editar los países. El panel de administración lee estas reglas automáticamente y oculta los botones y menús a los usuarios que no tienen los permisos adecuados.
+
+*   **6. Instalación Automática (Docker Entrypoint):**
+    > Se ha programado un script que lo instala y configura todo (`composer`, migraciones, seeders, etc.) de forma automática al ejecutar `docker compose up`. Esto permite a cualquier desarrollador poner en marcha el proyecto con un solo comando, sin configuraciones manuales complejas.
+
+### Limitaciones y Próximos Pasos
+
+*   **Notificación de Tarea Terminada:**
+    > Actualmente, la interfaz notifica al usuario cuando la sincronización en segundo plano *comienza*, pero no cuando *termina*.
+    >
+    > **Próximo paso:** Se podría implementar "polling" en Filament para que la tabla se refresque automáticamente, o usar WebSockets (con Laravel Echo) para mostrar una notificación de "Completado" en tiempo real.
+
+*   **Formato de los Datos de la API:**
+    > La API pública actualmente muestra los datos tal y como están guardados en la base de datos.
+    >
+    > **Próximo paso:** Se podría implementar **API Resources** de Laravel. Esto añadiría una capa de transformación para tener control total sobre el formato del JSON, permitiendo renombrar campos o añadir información extra sin tener que modificar la estructura de la base de datos.
+
+*   **Cobertura de Pruebas Ampliada (PHPUnit):**
+    > Se han implementado pruebas unitarias para las clases de lógica de negocio críticas (`RestCountriesService`, `SyncCountriesAction`), cubriendo tanto los casos de éxito como los de fallo de la API.
+    >
+    > **Próximo paso:** La cobertura de pruebas podría expandirse significativamente para incluir:
+    > - **Tests de Características (Feature Tests):** Para simular peticiones HTTP completas a los endpoints de la API y verificar las respuestas, los códigos de estado y la estructura del JSON.
