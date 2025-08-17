@@ -3,44 +3,36 @@ set -e
 
 cd /var/www/html
 
-# --- PASO 1: CORRECCIÓN DE PERMISOS ---
-# Asegurarse de que el usuario www-data es propietario de todo ANTES de empezar.
-echo ">>> Setting ownership of application files..."
-chown -R www-data:www-data .
+# --- PASO 1: FIJAR PERMISOS ---
+# Las carpetas ya existen, solo nos aseguramos de que www-data es el propietario.
+echo ">>> Setting ownership for storage and cache..."
+chown -R www-data:www-data storage bootstrap/cache
 
-# --- PASO 2: EJECUTAR COMPOSER COMO WWW-DATA ---
-# Si vendor no existe, instalamos como el usuario correcto.
+# --- PASO 2: INSTALAR DEPENDENCIAS ---
+# Ahora no debería fallar.
 if [ ! -d "vendor" ]; then
-  echo ">>> Installing Composer dependencies as www-data user..."
-  # Usamos 'su' para cambiar de usuario temporalmente
-  su -s /bin/sh -c "composer install --no-interaction --no-progress --prefer-dist" www-data
+  echo ">>> Installing Composer dependencies..."
+  composer install --no-interaction --no-progress --prefer-dist
 fi
 
-# --- PASO 3: EJECUTAR ARTISAN COMO WWW-DATA ---
-# Agrupamos todos los comandos de artisan y los ejecutamos como www-data
-echo ">>> Running setup commands as www-data user..."
-su -s /bin/sh -c "
-    # Copiamos el .env si no existe
-    if [ ! -f '.env' ]; then
-        cp .env.example .env
-        php artisan key:generate
-    fi
-    
-    # Esperamos a la base de datos
-    echo '>>> Waiting for database...'
-    while ! mysqladmin ping -h'db' -u'${DB_USERNAME}' -p'${DB_PASSWORD}' --silent --ssl=0; do
-        sleep 1
-    done
-    echo '>>> Database is ready.'
+# --- PASO 3: SETUP DE LA APP ---
+# (El resto del script que ya tenías)
+if [ ! -f '.env' ]; then
+    cp .env.example .env
+fi
 
-    # Ejecutamos migraciones, seeders y la sync inicial
-    php artisan migrate --force
-    php artisan db:seed --force
-    php artisan countries:sync --now
-    
-    # Limpiamos cachés
-    php artisan optimize:clear
-" www-data
+php artisan key:generate
+
+echo ">>> Waiting for database..."
+while ! mysqladmin ping -h"db" -u"${DB_USERNAME}" -p"${DB_PASSWORD}" --silent --ssl=0; do
+    sleep 1
+done
+echo ">>> Database is ready."
+
+php artisan migrate --force
+php artisan db:seed --force
+php artisan countries:sync --now
+php artisan optimize:clear
 
 echo ">>> Setup complete. Starting PHP-FPM..."
 exec php-fpm

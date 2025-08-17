@@ -36,3 +36,9 @@ phpunit.result.cache
 
 # Docker database
 /docker/dbdata/
+
+!/storage/framework/cache/.gitkeep
+!/storage/framework/sessions/.gitkeep
+!/storage/framework/views/.gitkeep
+!/storage/logs/.gitkeep
+!/bootstrap/cache/.gitkeep
