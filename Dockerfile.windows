@@ -40,14 +40,14 @@ COPY --chown=www-data:www-data . /var/www/html
 # ----------------------------------------------------------------
 
 # 1. Copy our custom entrypoint script into a known location in the container.
-COPY docker/app/entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY docker/app/entrypoint_windows.sh /usr/local/bin/entrypoint_windows.sh
 
 # 2. Make the entrypoint script executable.
-RUN chmod +x /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint_windows.sh
 
 # 3. Set this script as the ENTRYPOINT.
 # This tells Docker to run this script every time the container starts.
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+ENTRYPOINT ["/usr/local/bin/entrypoint_windows.sh"]
 
 # 4. Clear the default CMD.
 # The `php-fpm` command will now be called at the end of our entrypoint script.

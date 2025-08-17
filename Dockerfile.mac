@@ -1,0 +1,61 @@
+# Dockerfile
+
+# Start from the official PHP 8.2 FPM image.
+# FPM (FastCGI Process Manager) is an alternative PHP FastCGI implementation with some additional features useful for sites of any size.
+FROM php:8.2-fpm
+
+# Set the working directory for all subsequent instructions.
+WORKDIR /var/www/html
+
+# Install essential system dependencies.
+# - ...: Common tools and libraries for PHP extensions.
+# - mysql-client: Needed for the 'mysqladmin' command in our entrypoint script.
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
+    libicu-dev \
+    libzip-dev \
+    zip \
+    unzip \
+    mariadb-client
+
+# Install the PHP extensions required by Laravel and Filament.
+RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd intl zip
+
+# Install Composer, the PHP dependency manager.
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Copy the application source code into the container.
+# We do this before the entrypoint script so the files are available.
+COPY . /var/www/html
+
+# Change the ownership of all application files to the 'www-data' user.
+COPY --chown=www-data:www-data . /var/www/html
+
+# ----------------------------------------------------------------
+# --- CHANGES FOR AUTOMATION SCRIPT ---
+# ----------------------------------------------------------------
+
+# 1. Copy our custom entrypoint script into a known location in the container.
+COPY docker/app/entrypoint_mac.sh /usr/local/bin/entrypoint_mac.sh
+
+# 2. Make the entrypoint script executable.
+RUN chmod +x /usr/local/bin/entrypoint_mac.sh
+
+# 3. Set this script as the ENTRYPOINT.
+# This tells Docker to run this script every time the container starts.
+ENTRYPOINT ["/usr/local/bin/entrypoint_mac.sh"]
+
+# 4. Clear the default CMD.
+# The `php-fpm` command will now be called at the end of our entrypoint script.
+CMD []
+
+# --- END OF CHANGES ---
+
+# We still expose the port, but the user is now www-data by default
+# as set in the entrypoint script after setup.
+USER www-data
+EXPOSE 9000

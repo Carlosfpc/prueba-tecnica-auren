@@ -43,13 +43,23 @@ Sigue estos pasos para poner en marcha la aplicación.
     cd prueba-tecnica-auren
     ```
 
-2.  **Crear el Archivo de Entorno (`.env`)**
+2.  **Seleccionar el Dockerfile para Desarrollo Manual**
+    En la raíz del proyecto, debes renombrar el `Dockerfile` específico para tu entorno.
+    ```bash
+    # Si estás en Windows (usando CMD o PowerShell)
+    rename Dockerfile.dev_manual Dockerfile
+
+    # Si estás en macOS o Linux (usando la Terminal)
+    mv Dockerfile.dev_manual Dockerfile
+    ```
+
+3.  **Crear el Archivo de Entorno (`.env`)**
     Este es el único paso manual requerido antes de iniciar los contenedores. Docker Compose lo necesita para configurar la base de datos en el primer arranque.
     ```bash
     cp .env.example .env
     ```
 
-3.  **Levantar el Entorno con un Solo Comando**
+4.  **Levantar el Entorno con un Solo Comando**
     Este comando construirá las imágenes de Docker y ejecutará el script de configuración automática.
     ```bash
     docker compose up -d --build
