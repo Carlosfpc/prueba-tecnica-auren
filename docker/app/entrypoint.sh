@@ -3,6 +3,12 @@ set -e
 
 cd /var/www/html
 
+echo ">>> Setting up storage and cache directories..."
+mkdir -p bootstrap/cache
+mkdir -p storage/framework/{sessions,views,cache}
+chown -R www-data:www-data bootstrap/cache storage
+chmod -R 775 bootstrap/cache storage
+
 # Install dependencies if they are not present
 if [ ! -d "vendor" ]; then
   echo ">>> Installing Composer dependencies..."
