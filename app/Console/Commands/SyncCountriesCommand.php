@@ -12,7 +12,7 @@ class SyncCountriesCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'countries:sync';
+    protected $signature = 'countries:sync {--now}';
 
     /**
      * The console command description.
@@ -26,12 +26,23 @@ class SyncCountriesCommand extends Command
      */
     public function handle(): int
     {
-        $this->info('Dispatching country synchronization job to the queue...');
+        // Check if the --now option was passed.
+        if ($this->option('now')) {
+            $this->info('Starting country synchronization synchronously...');
 
-        SyncCountriesJob::dispatch();
+            // Dispatch the job and process it immediately in the current process.
+            SyncCountriesJob::dispatchSync();
 
-        $this->info('Job dispatched successfully! The synchronization will run in the background.');
-        $this->comment('Run "php artisan queue:work" to process the queue.');
+            $this->info('Synchronization completed successfully!');
+        } else {
+            $this->info('Dispatching country synchronization job to the queue...');
+
+            // Default behavior: dispatch to the queue.
+            SyncCountriesJob::dispatch();
+
+            $this->info('Job dispatched successfully! The synchronization will run in the background.');
+            $this->comment('Reminder: Run "php artisan queue:work" to process the jobs.');
+        }
 
         return Command::SUCCESS;
     }
