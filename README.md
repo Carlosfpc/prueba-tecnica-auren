@@ -47,10 +47,10 @@ Sigue estos pasos para poner en marcha la aplicación.
     En la raíz del proyecto, debes renombrar el `Dockerfile` específico para tu entorno.
     ```bash
     # Si estás en Windows (usando CMD o PowerShell)
-    rename Dockerfile.dev_manual Dockerfile
+    rename Dockerfile.windows Dockerfile
 
     # Si estás en macOS o Linux (usando la Terminal)
-    mv Dockerfile.dev_manual Dockerfile
+    mv Dockerfile.mac Dockerfile
     ```
 
 3.  **Crear el Archivo de Entorno (`.env`)**
